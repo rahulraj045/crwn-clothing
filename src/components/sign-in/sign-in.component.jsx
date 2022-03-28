@@ -3,7 +3,7 @@ import { useState } from 'react';
 import FormInput from '../../components/form-input/form-input.components';
 import CustomButton from '../custom-button/custom-button.component';
 
-import { signInWithGooglePopup, CreateUserDocumentFromAuth } from '../../firebase/firebase.utils';
+import { signInWithGooglePopup, createUserDocumentFromAuth, signInAuthUserWithEmailAndPassword } from '../../firebase/firebase.utils';
 
 import './sign-in.styles.scss';
 
@@ -23,20 +23,38 @@ const SignIn = () => {
 
     const logGoogleUser = async () => {
         const { user } = await signInWithGooglePopup();
-        const userDocRef = await CreateUserDocumentFromAuth(user);
-    }
+        const userDocRef = await createUserDocumentFromAuth(user);
+    };
 
-    const handleSubmit = event => {
-        event.prevntDefault()
+    const handleSubmit = async (event) => {
+        event.preventDefault()
 
-        resetFormFields();
-    }
+        try {
 
-    const handleChange = event => {
-        const { name, value} = event.target;
+            const response = await signInAuthUserWithEmailAndPassword(email, password);
+            console.log(response);
+            resetFormFields();
+        } catch(error) {
 
-        setFormFields( {[name]: value})
-    }
+            switch(error.code) {
+
+                case "auth/wrong-password":
+                    alert("Incorrect password for Email");
+                    break;
+                case "auth/user-not-found":
+                    alert("User not found, Check your email");
+                    break;
+                default:
+                    console.log(error);
+            }
+        }   
+    };
+
+    const handleChange = async (event) => {
+        const {name, value} = event.target;
+
+        setFormFields({...formFields, [name]: value})
+    };
 
     return (
         <div className='sign-in'>
@@ -48,7 +66,7 @@ const SignIn = () => {
                     name='email' 
                     type="email" 
                     label="Email"
-                    handleChange={handleChange} 
+                    onChange={handleChange} 
                     value={email} 
                     required 
                 />
@@ -57,13 +75,13 @@ const SignIn = () => {
                     name='password' 
                     type="password" 
                     label="Password"
-                    handleChange={handleChange}
+                    onChange={handleChange}
                     value={password} 
                     required 
                 />
                 <div className='buttons-container'>
                     <CustomButton type="submit" > Sign In </CustomButton>
-                    <CustomButton onClick={logGoogleUser} isGoogleSignIn> 
+                    <CustomButton type="button" onClick={logGoogleUser} buttonType='google'> 
                         Sign In With Google 
                     </CustomButton>
                 </div>
