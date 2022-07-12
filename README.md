@@ -1,3 +1,3 @@
 # crwn-clothing
 
-https://sage-gumdrop-39ead2.netlify.app/
+https://crwn-clothing-rah484.netlify.app
